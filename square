@@ -1,0 +1,227 @@
+// aquare.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
+//
+/*
+奇数填法讲解
+1、每一个数放在前一个数的左上一格；
+2、如果这个数所要放的格已经超出了顶行那么就把它放在底行，仍然要放在左一列；
+3、如果这个数所要放的格已经超出了最左列那么就把它放在最右列，仍然要放在上一行；；
+4、如果这个数所要放的格已经超出了顶行且超出了最左列，那么就把它放在前一个数的下一行同一列的格内
+5、如果这个数所要放的格已经有数填入，那么就把它放在前一个数的下一行同一列的格内。
+*/
+
+#include "pch.h"
+#include <iostream>
+#include <cmath>
+#include <iomanip>//声明一些 “流操作符”的  比如宽度，对齐这些
+using namespace std;
+
+void square(int a[][300], int n) {
+	int i; //意思是在0行1列上的位置插入数值
+	int j;
+
+	for (i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			a[i][j] = 0;
+		}
+	}
+	i = 0;
+	j = n / 2;
+	a[i][j] = 1;//0行1列插入数值为1
+	for (int k = 2; k <= n * n; k++) {//第一个已经默认插入，从第二个开始插入
+		int iTemp = i; //暂存i，j的值
+		int jTemp = j;
+		i = (i - 1 + n) % n;
+		j = (j - 1 + n) % n;
+		if (a[i][j] > 0) {//如果这个数所要放的格已经有数填入，那么就把它放在前一个数的下一行同一列的格内。
+			i = (iTemp + 1) % n;
+			j = jTemp;
+		}
+		a[i][j] = k;
+	}
+	for (i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			cout << setw(7) << a[i][j] << setw(7);
+		}
+		cout << endl;
+	}
+}
+//双偶阶数
+void  doublesquare(int a[][300], int n) {
+	int i;
+	for (i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			a[i][j] = 0;
+		}
+	}
+	int  value = 1;
+	for (i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			a[i][j] = value;
+			value++;
+		}
+	}
+
+	int num = n * n + 1;
+	//int the_n = n - 1;
+	/*for (i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++){
+				a[i][j]=i*n+j+1;
+			}
+	}*/
+	//对于4阶的倍数才可以  对角线的元素进行对调就行了  其他的元素不用进行对调
+	for (i = 0; i < n; i += 4) {//i+=4是 n=4k的意思
+		for (int j = 0; j < n; j += 4) {
+			a[i][j] = num - a[i][j];
+			a[i + 1][j + 1] = num - a[i + 1][j + 1];
+			a[i + 2][j + 2] = num - a[i + 2][j + 2];
+			a[i + 3][j + 3] = num - a[i + 3][j + 3];
+			a[i + 3][j] = num - a[i + 3][j];
+			a[i + 2][j + 1] = num - a[i + 2][j + 1];
+			a[i + 1][j + 2] = num - a[i + 1][j + 2];
+			a[i][j + 3] = num - a[i][j + 3];
+
+		}
+
+	}
+
+	/*for (i = 0; i <= the_n; i++)
+	{
+		a[i][i] = num - a[i][i];
+		a[the_n - i][i] = num - a[the_n - i][i]; 
+	}*/
+
+	for (i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			cout << setw(5) << a[i][j] << setw(5);
+		}
+		cout << endl;
+	}
+
+}
+
+//创建单偶幻方  主要是进行划分
+void DOsquare(int a[][300], int n) {
+	for (int i = 0; i < n; i++) {  
+		for (int j = 0; j < n; j++) {
+			a[i][j] = 0;
+		}
+	}
+	int k = n / 2;//将n*n的阶数分解为每个都是K*K的阶数
+	square(a, k);
+	//赋初始值，将每个分割的K*K阶的第一个格作为开始值，左上的开始赋值，右下的次之，右上的再次之，左下的最后
+	for (int i = 0; i < k; i++) {
+		for (int j = 0; j < k; j++) {
+			a[i + k][j + k] = a[i][j] + k * k;
+			a[i][j + k] = a[i][j] + k * k * 2;
+			a[i + k][j] = a[i][j] + k * k * 3;
+
+		}
+	}
+
+	//n=4m+2; m是定义每个K*K需要有多少个值要替换
+	int m = (n - 2) / 4;
+	//交换A区域的正中间行的m-1位置的数
+	for (int i = 0; i < m - 1; i++) {
+		int data = a[k / 2][i];
+		a[k / 2][i] = a[k / 2 + k][i];
+		a[k / 2 + k][i] = data;
+	}
+	//A区域正中间行正中间列
+	int data = a[k / 2][k / 2];
+	a[k / 2][k / 2] = a[k / 2 + k][k / 2];
+	a[k / 2 + k][k / 2] = data;
+
+	//不属于正中间行的其他行数的前m个格的数发生交换
+	for (int i = 0; i < k; i++) {
+		for (int j = 0; j < k / 2; j++) {
+			if (i != k / 2) {
+				int data = a[i][j];
+				a[i][j] = a[i + k][j];
+				a[i + k][j] = data;
+			}
+		}
+	}
+	//交换c b两区域的值  /从右到左的m-1个；
+
+
+	for (int i = 0; i < k; i++) {
+		for (int j = n - 1; j < (n - 1) - (m - 1); j--) {
+			int data = a[i][j];
+			a[i][j] = a[i + k][j];
+			a[i + k][j] = data;
+		}
+	}
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			cout << setw(5) << a[i][j] << setw(5);
+		}
+		cout << endl;
+	}
+
+}
+
+int main() {
+	int a[300][300];//申请二维数组的空间
+	bool f = true;
+	while (f) {
+		int n;//阶数
+		int choose;
+		cout << setw(40) << "幻方制作" << endl;
+		cout << setw(20) << "==================================================" << endl;
+		cout << endl;
+		cout << setw(32) << "1: 奇数阶的幻方" << endl;
+		cout << setw(50) << "2 :偶数阶的幻方（对于四阶的倍数）" << endl;
+		cout << setw(34) << "3: 单偶数阶的幻方" << endl;
+		cout << setw(23) << "4:退出" << endl;
+		cout << setw(36) << "请选择（1 , 2,  3, 4）" << endl;
+		cin >> choose;
+		system("cls");
+		if (choose == 1) {
+			cout << setw(20) << "请输入奇数阶  （n）" << endl;
+			cin >> n;
+			if (n % 2 == 0) {
+				cout << setw(4) << "对不起，你输入的阶数有错" << endl;
+				//cin >> n;
+			}
+			else {
+				square(a, n);
+
+			}
+
+		}
+		if (choose == 2) {
+			cout << setw(20) << "请输入偶数阶的幻方阶数  (n)" << endl;
+			cin >> n;
+			if (n % 2 != 0) {
+				cout << setw(4) << "对不起，你输入的阶数有错" << endl;
+				//cin >> n;
+
+			}
+			else {
+				doublesquare(a, n);
+
+			}
+		}
+		if (choose == 3) {
+			cout  <<"请输入单偶数阶的幻方阶数 （n）" << endl;
+			cin >> n;
+			if (n % 2 != 0) {
+				cout << setw(4) << "对不起，你输入的阶数有错" << endl;
+			}
+			else {
+				DOsquare(a, n);
+			}
+		}
+		if (choose == 4) {
+			f = false;
+			break;
+		}
+
+	}
+
+	return 0;
+}
+
+
+
+
